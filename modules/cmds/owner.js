@@ -1,21 +1,22 @@
 const fs = require("fs-extra");
-const request = require("request");
 const path = require("path");
+const https = require("https");
 
 module.exports = {
   config: {
     name: "owner",
-    version: "1.3.0",
+    version: "1.5.0",
     author: "Mᴏʜᴀᴍᴍᴀᴅ Aᴋᴀsʜ",
     role: 0,
-    shortDescription: "Owner information with image",
+    shortDescription: "Owner info",
     category: "Information",
     guide: {
       en: "owner"
     }
   },
 
-  onStart: async function ({ api, event }) {
+  onStart: async function ({ message }) {
+
     const ownerText = 
 `╭─ 👑 Oᴡɴᴇʀ Iɴғᴏ 👑 ─╮
 │ 👤 Nᴀᴍᴇ       : 𝐌𝐃. 𝐑𝐨𝐰𝐬𝐡𝐨𝐧
@@ -30,27 +31,36 @@ module.exports = {
 │ 📞 WhatsApp  : wa.me/0130808****
 ╰────────────────╯`;
 
-    const cacheDir = path.join(__dirname, "cache");
-    const imgPath = path.join(cacheDir, "owner.jpg");
+    const imgURL = "https://i.imgur.com/EZxOVuN.jpeg";
 
-    if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
+    const cacheFolder = path.join(__dirname, "cache");
+    if (!fs.existsSync(cacheFolder)) {
+      fs.mkdirSync(cacheFolder, { recursive: true });
+    }
 
-    const imgLink = "https://i.imgur.com/p1B9J6f.jpeg";
+    const fileName = path.basename(imgURL);
+    const filePath = path.join(cacheFolder, fileName);
 
-    const send = () => {
-      api.sendMessage(
-        {
-          body: ownerText,
-          attachment: fs.createReadStream(imgPath)
-        },
-        event.threadID,
-        () => fs.unlinkSync(imgPath),
-        event.messageID
-      );
-    };
+    if (!fs.existsSync(filePath)) {
+      await new Promise((resolve, reject) => {
+        const file = fs.createWriteStream(filePath);
+        https.get(imgURL, (res) => {
+          if (res.statusCode !== 200) {
+            fs.unlink(filePath, () => {});
+            return reject();
+          }
+          res.pipe(file);
+          file.on("finish", () => file.close(resolve));
+        }).on("error", () => {
+          fs.unlink(filePath, () => {});
+          reject();
+        });
+      });
+    }
 
-    request(encodeURI(imgLink))
-      .pipe(fs.createWriteStream(imgPath))
-      .on("close", send);
+    return message.reply({
+      body: ownerText,
+      attachment: fs.createReadStream(filePath)
+    });
   }
 };

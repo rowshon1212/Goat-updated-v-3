@@ -25,7 +25,7 @@ module.exports = {
     config: {
         name: "cmd",
         version: "1.1",
-        author: "rX",
+        author: "Rx Abdullah (fixed for auto-loader)",
         countDown: 5,
         role: 2,
         category: "owner",

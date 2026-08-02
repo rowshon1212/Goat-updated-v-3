@@ -1,44 +1,75 @@
-const util = require("util");
+const { removeHomeDir, log } = global.utils;
 
 module.exports = {
-  config: {
-    name: "eval",
-    version: "1.0",
-    author: "rX",
-    countDown: 0,
-    role: 2,
-    shortDescription: "Run JavaScript code",
-    longDescription: "Execute JavaScript with full bot access",
-    category: "owner",
-    guide: {
-      en: "{pn} <code>"
-    }
-  },
+	config: {
+		name: "eval",
+		version: "1.6",
+		author: "NtKhang",
+		countDown: 5,
+		role: 2,
+		description: {
+			vi: "Test code nhanh",
+			en: "Test code quickly"
+		},
+		category: "owner",
+		guide: {
+			vi: "{pn} <đoạn code cần test>",
+			en: "{pn} <code to test>"
+		}
+	},
 
-  onStart: async function ({ message, args, api, event, usersData, threadsData, globalData }) {
-    const code = args.join(" ");
+	langs: {
+		vi: {
+			error: "❌ Đã có lỗi xảy ra:"
+		},
+		en: {
+			error: "❌ An error occurred:"
+		}
+	},
 
-    if (!code) {
-      return message.reply("❌ Please provide JavaScript code.\n\nExample:\n/eval 1+1");
-    }
+	onStart: async function ({ api, args, message, event, threadsData, usersData, dashBoardData, globalData, threadModel, userModel, dashBoardModel, globalModel, role, commandName, getLang }) {
+		
+		function output(msg) {
+			if (typeof msg == "number" || typeof msg == "boolean" || typeof msg == "function")
+				msg = msg.toString();
+			else if (msg instanceof Map) {
+				let text = `Map(${msg.size}) `;
+				text += JSON.stringify(mapToObj(msg), null, 2);
+				msg = text;
+			}
+			else if (typeof msg == "object")
+				msg = JSON.stringify(msg, null, 2);
+			else if (typeof msg == "undefined")
+				msg = "undefined";
 
-    try {
-      let result = await (async () => eval(code))();
-
-      if (typeof result !== "string")
-        result = util.inspect(result, { depth: 2 });
-
-      if (result.length > 1900)
-        result = result.slice(0, 1900) + "\n...output truncated";
-
-      return message.reply(
-        `🧪 EVAL RESULT\n────────────\n${result}`
-      );
-
-    } catch (err) {
-      return message.reply(
-        `❌ EVAL ERROR\n────────────\n${err.stack || err.toString()}`
-      );
-    }
-  }
+			message.reply(msg);
+		}
+		function out(msg) {
+			output(msg);
+		}
+		function mapToObj(map) {
+			const obj = {};
+			map.forEach(function (v, k) {
+				obj[k] = v;
+			});
+			return obj;
+		}
+		const cmd = `
+		(async () => {
+			try {
+				${args.join(" ")}
+			}
+			catch(err) {
+				log.err("eval command", err);
+				message.send(
+					"${getLang("error")}\\n" +
+					(err.stack ?
+						removeHomeDir(err.stack) :
+						removeHomeDir(JSON.stringify(err, null, 2) || "")
+					)
+				);
+			}
+		})()`;
+		eval(cmd);
+	}
 };

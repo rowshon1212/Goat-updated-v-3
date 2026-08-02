@@ -1,51 +1,69 @@
+const fs = require("fs-extra");
+const { config } = global.GoatBot;
+const { client } = global;
+
 module.exports = {
 	config: {
 		name: "adminonly",
 		aliases: ["adonly", "onlyad", "onlyadmin"],
-		version: "1.1",
-		author: "rX",
+		version: "1.5",
+		author: "NTKhang",
 		countDown: 5,
-		role: 1,
+		role: 3,
 		description: {
-			en: "turn on/off the mode where only bot admins + group admins can use the bot in this group"
+			vi: "bật/tắt chế độ chỉ admin mới có thể sử dụng bot",
+			en: "turn on/off only admin can use bot"
 		},
-		category: "box chat",
+		category: "owner",
 		guide: {
-			en: "   {pn} [on | off]: turn on/off the mode only bot admin & group admin can use bot"
-				+ "\n   {pn} status: show current status of this mode"
-				+ "\n(non-admins will be silently ignored, no message sent, while this mode is on)"
+			vi: "   {pn} [on | off]: bật/tắt chế độ chỉ admin mới có thể sử dụng bot"
+				+ "\n   {pn} noti [on | off]: bật/tắt thông báo khi người dùng không phải là admin sử dụng bot",
+			en: "   {pn} [on | off]: turn on/off the mode only admin can use bot"
+				+ "\n   {pn} noti [on | off]: turn on/off the notification when user is not admin use bot"
 		}
 	},
 
 	langs: {
+		vi: {
+			turnedOn: "Đã bật chế độ chỉ admin mới có thể sử dụng bot",
+			turnedOff: "Đã tắt chế độ chỉ admin mới có thể sử dụng bot",
+			turnedOnNoti: "Đã bật thông báo khi người dùng không phải là admin sử dụng bot",
+			turnedOffNoti: "Đã tắt thông báo khi người dùng không phải là admin sử dụng bot"
+		},
 		en: {
-			turnedOn: "✅ Turned on the mode: only Bot Admins & Group Admins can use the bot in this group\n(other members' commands will be silently ignored)",
-			turnedOff: "❌ Turned off the mode: only Bot Admins & Group Admins can use the bot in this group",
-			alreadyOn: "⚠️ This mode is already turned on",
-			alreadyOff: "⚠️ This mode is already turned off",
-			status: "📌 Admin Only (Bot Admin + Group Admin) mode is currently: %1",
-			syntaxError: "Syntax error, use {pn} on/off or {pn} status"
+			turnedOn: "Turned on the mode only admin can use bot",
+			turnedOff: "Turned off the mode only admin can use bot",
+			turnedOnNoti: "Turned on the notification when user is not admin use bot",
+			turnedOffNoti: "Turned off the notification when user is not admin use bot"
 		}
 	},
 
-	onStart: async function ({ message, event, args, threadsData, getLang }) {
-		const { threadID } = event;
+	onStart: function ({ args, message, getLang }) {
+		let isSetNoti = false;
+		let value;
+		let indexGetVal = 0;
 
-		if (args[0] === "status" || !args[0]) {
-			const adminOnly = await threadsData.get(threadID, "data.adminOnly", false);
-			return message.reply(getLang("status", adminOnly ? "ON ✅" : "OFF ❌"));
+		if (args[0] == "noti") {
+			isSetNoti = true;
+			indexGetVal = 1;
 		}
 
-		if (!["on", "off"].includes(args[0]))
+		if (args[indexGetVal] == "on")
+			value = true;
+		else if (args[indexGetVal] == "off")
+			value = false;
+		else
 			return message.SyntaxError();
 
-		const currentStatus = await threadsData.get(threadID, "data.adminOnly", false);
-		const newStatus = args[0] === "on";
+		if (isSetNoti) {
+			config.hideNotiMessage.adminOnly = !value;
+			message.reply(getLang(value ? "turnedOnNoti" : "turnedOffNoti"));
+		}
+		else {
+			config.adminOnly.enable = value;
+			message.reply(getLang(value ? "turnedOn" : "turnedOff"));
+		}
 
-		if (currentStatus === newStatus)
-			return message.reply(getLang(newStatus ? "alreadyOn" : "alreadyOff"));
-
-		await threadsData.set(threadID, newStatus, "data.adminOnly");
-		return message.reply(getLang(newStatus ? "turnedOn" : "turnedOff"));
+		fs.writeFileSync(client.dirConfig, JSON.stringify(config, null, 2));
 	}
 };
