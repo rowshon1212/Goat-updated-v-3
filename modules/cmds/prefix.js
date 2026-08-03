@@ -45,7 +45,7 @@ async function showPrefixStatus({ event, message, threadsData }) {
     }
 
     statusText += `
-├‣ ғʙ : ʀxαвᴅυℓℓαн007
+├‣ ғʙ : Rifat Khan
 ╰────────────◊`;
 
     const randomGif = GIFS[Math.floor(Math.random() * GIFS.length)];
