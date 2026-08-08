@@ -3,13 +3,16 @@ const { getType, getRoleConfig, isBannedOrOnlyAdmin, createGetText2, buildContex
 
 module.exports = function (api, threadModel, userModel, dashBoardModel, globalModel, usersData, threadsData, dashBoardData, globalData) {
     return async function (event, message) {
+        const senderID = event.userID || event.senderID || event.author;
+        if (String(senderID) === String(api.getCurrentUserID())) return;
+
         const ctx = await buildContext({ api, threadModel, userModel, dashBoardModel, globalModel, usersData, threadsData, dashBoardData, globalData, event, message });
         if (!ctx) return;
         const {
             utils, log, removeHomeDir, getTime,
             threadData, userData, role,
             parameters, langCode, createMessageSyntaxError,
-            senderID, threadID, isGroup, body, prefix
+            threadID, isGroup, body, prefix
         } = ctx;
         const { GoatBot } = global;
         const { author } = event;
