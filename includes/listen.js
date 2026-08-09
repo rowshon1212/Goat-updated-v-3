@@ -87,12 +87,16 @@ module.exports = (
 
 	return async function listener(event) {
 		// Prevent bot from responding to its own messages to avoid infinite loops/self-responses
-		const botID = api.getCurrentUserID();
-		const senderID = event.senderID || event.author || event.userID;
-		if (String(senderID) === String(botID)) {
-			if (["message", "message_reply", "e2ee_message"].includes(event.type)) {
-				return;
+		try {
+			const botID = (typeof api.getCurrentUserID === "function" ? api.getCurrentUserID() : null) || global.botID;
+			const senderID = event.senderID || event.author || event.userID;
+			if (senderID && botID && String(senderID) === String(botID)) {
+				if (["message", "message_reply", "e2ee_message"].includes(event.type)) {
+					return;
+				}
 			}
+		} catch (e) {
+			console.error("Error in bot self-response check:", e);
 		}
 
 		// Populate E2EE message map to robustly support unsend and reaction events
