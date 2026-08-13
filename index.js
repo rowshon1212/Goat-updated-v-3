@@ -3,7 +3,10 @@ const log = require("./utils/logger/log.js");
 const express = require("express");
 
 const app = express();
-const PORT = 5000;
+// Render assigns the public port dynamically via process.env.PORT.
+// Hardcoding 5000 here means Render/UptimeRobot can never reach the
+// service on its real port, so health checks fail and it shows "down".
+const PORT = process.env.PORT || 5000;
 
 // keep-alive route (Render requirement)
 app.get("/", (req, res) => {

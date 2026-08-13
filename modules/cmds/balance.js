@@ -27,7 +27,7 @@ module.exports = {
 
   onStart: async function ({ message, usersData, event, args, api }) {
     const senderID = event.senderID;
-    const allowedUIDs = [config.adminBot, ...config.adminBot];
+    const allowedUIDs = [...config.adminBot];
 
     const formatMoney = (num) => {
       const units = ["", "K", "M", "B", "T", "Q", "Qi", "Sx", "Sp", "Oc", "N", "D"];
@@ -150,3 +150,80 @@ module.exports = {
       const userData = await usersData.get(targetUID) || { money: "0" };
       const userName = userData.name || "Unknown";
       const newBalance = (Number(userData.money) + Number(amount)).toString();
+
+      await usersData.set(targetUID, { ...userData, money: newBalance });
+
+      return message.reply(
+        `✅ Added ${formatMoney(amount)} to ${userName}.\n💳 New balance: ${formatMoney(newBalance)}`
+      );
+    }
+
+    if (args[0] === "delete" || args[0] === "subtract" || args[0] === "remove") {
+      if (!allowedUIDs.includes(senderID)) return message.reply("❌ Permission denied.");
+
+      const targetUID = getTargetUID();
+      const amount = getAmount();
+
+      if (!targetUID) return message.reply("❌ User not found.");
+      if (!isValidAmount(amount)) return message.reply("❌ Invalid amount.");
+
+      const userData = await usersData.get(targetUID) || { money: "0" };
+      const userName = userData.name || "Unknown";
+      const newBalance = Math.max(0, Number(userData.money) - Number(amount)).toString();
+
+      await usersData.set(targetUID, { ...userData, money: newBalance });
+
+      return message.reply(
+        `✅ Removed ${formatMoney(amount)} from ${userName}.\n💳 New balance: ${formatMoney(newBalance)}`
+      );
+    }
+
+    if (args[0] === "transfer" || args[0] === "send") {
+      const targetUID = getTargetUID();
+      const amount = getAmount();
+
+      if (!targetUID) return message.reply("❌ User not found.");
+      if (targetUID === senderID) return message.reply("❌ You can't transfer money to yourself.");
+      if (!isValidAmount(amount)) return message.reply("❌ Invalid amount.");
+
+      const senderData = await usersData.get(senderID) || { money: "0" };
+      if (Number(senderData.money) < Number(amount))
+        return message.reply(`❌ Not enough balance.\n💳 Your balance: ${formatMoney(senderData.money)}`);
+
+      const receiverData = await usersData.get(targetUID) || { money: "0" };
+      const receiverName = receiverData.name || "Unknown";
+
+      const newSenderBalance = (Number(senderData.money) - Number(amount)).toString();
+      const newReceiverBalance = (Number(receiverData.money) + Number(amount)).toString();
+
+      await usersData.set(senderID, { ...senderData, money: newSenderBalance });
+      await usersData.set(targetUID, { ...receiverData, money: newReceiverBalance });
+
+      return message.reply(
+        `✅ Transferred ${formatMoney(amount)} to ${receiverName}.\n💳 Your new balance: ${formatMoney(newSenderBalance)}`
+      );
+    }
+
+    if (args[0] === "request") {
+      const amount = args[1];
+
+      if (!isValidAmount(amount)) return message.reply("❌ Invalid amount.");
+
+      const senderName = (await usersData.get(senderID))?.name || "Someone";
+      const adminMentions = allowedUIDs.map(uid => `@${uid}`).join(" ");
+
+      return message.reply(
+        `📨 ${senderName} is requesting ${formatMoney(amount)} from an admin.\n${adminMentions}\n(Admins can approve with: {pn} add ${senderID} ${amount})`
+      );
+    }
+
+    // Default: view balance (own or mentioned/target user's)
+    const targetUID = getTargetUID() || senderID;
+    const userData = await usersData.get(targetUID) || { money: "0" };
+    const userName = userData.name || (await usersData.getName(targetUID).catch(() => "Unknown"));
+
+    return message.reply(
+      `💳 Balance of ${userName}: ${formatMoney(userData.money || 0)}`
+    );
+  }
+};
