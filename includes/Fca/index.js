@@ -12,7 +12,7 @@ var logger = require("../../func/utils/log.js");
 var { cra, cv, cb, co } = getThemeColors();*/
 log.maxRecordSize = 100;
 var checkVerified = null;
-const Boolean_Option = ['online', 'selfListen', 'listenEvents', 'updatePresence', 'forceLogin', 'autoMarkDelivery', 'autoMarkRead', 'listenTyping', 'autoReconnect', 'emitReady'];
+const Boolean_Option = ['online', 'selfListen', 'selfListenEvent', 'listenEvents', 'updatePresence', 'forceLogin', 'autoMarkDelivery', 'autoMarkRead', 'listenTyping', 'autoReconnect', 'emitReady'];
 
 
 function setOptions(globalOptions, options) {

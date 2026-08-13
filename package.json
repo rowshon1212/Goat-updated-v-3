@@ -65,9 +65,9 @@
 		"yumi-json-bigint": "^1.0.0"
 	},
 	"scripts": {
-		"start": "set NODE_ENV=&& node index.js",
-		"dev": "set NODE_ENV=development&& node index.js",
-		"prod": "set NODE_ENV=production&& node index.js"
+		"start": "node index.js",
+		"dev": "NODE_ENV=development node index.js",
+		"prod": "NODE_ENV=production node index.js"
 	},
 	"author": "rX",
 	"license": "MIT",

@@ -121,7 +121,7 @@
     "selfListen": true,
     "selfListenEvent": true,
     "autoMarkDelivery": false,
-    "autoReconnect": false,
+    "autoReconnect": true,
     "notes": ""
   },
   "e2ee": {
