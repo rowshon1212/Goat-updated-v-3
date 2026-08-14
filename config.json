@@ -122,7 +122,8 @@
     "selfListenEvent": true,
     "autoMarkDelivery": false,
     "autoReconnect": true,
-    "notes": ""
+    "autoUpdate": false,
+    "notes": "autoUpdate is set to false so the FCA package version cannot silently change and restart the bot on every deploy boot. Update it manually and test locally first."
   },
   "e2ee": {
     "enable": true,
