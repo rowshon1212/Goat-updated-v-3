@@ -122,8 +122,8 @@
     "selfListenEvent": true,
     "autoMarkDelivery": false,
     "autoReconnect": true,
-    "autoUpdate": false,
-    "notes": "autoUpdate is set to false so the FCA package version cannot silently change and restart the bot on every deploy boot. Update it manually and test locally first."
+    "autoUpdate": true,
+    "notes": "The FCA package is managed through @rxabdullah/xdi-fca. The library checks npm asynchronously and updates this dependency when a newer compatible release is available."
   },
   "e2ee": {
     "enable": true,

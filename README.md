@@ -20,15 +20,15 @@ This project includes a command system, event handlers, database support, uptime
 ##
 
 - Facebook Messenger chatbot functionality
-- Facebook login through `appstate.txt` (cookies)
+- Facebook login through an appstate JSON file
 - 
 - Easily customizable structure for developers
 
 
 ## 🧰 Requirements
 
-- **Node.js version 18 or above (18+)**
-- Facebook `appstate.txt` file (login cookie JSON)
+- **Node.js version 20 or above**
+- A valid Facebook appstate JSON file named `account.txt`, `appstate.txt`, or `appstate.json`
 
 
 ## ⚙️ Installation
@@ -42,14 +42,26 @@ https://github.com/abdullahrx07/MARI-GBOT.git
 ### 2. Dependencies Installed
 
 ```bash
-npm install
+pnpm install --ignore-workspace
 ```
 
 ### 3. Facebook Appstate Add Do it
 
-- Paste your Facebook account's `appstate.txt` file in the root folder.
+- Paste your Facebook appstate JSON in the bot folder. The loader accepts
+  `account.txt`, `appstate.txt`, and their `.dev` / `.json` variants.
 
 - Ensure that the file is valid and updated.
+
+### FCA and E2EE
+
+The bot uses the published `@rxabdullah/xdi-fca` package through a stable
+local adapter, so protocol and API additions can be received with normal
+package updates without changing the command system.
+
+E2EE is enabled in `config.json` by default. Device data is persisted to
+`e2ee_device.json` so the bot reuses the same Messenger device after restart.
+Keep that file private and do not delete it unless you intentionally want to
+register a new E2EE device.
 
 ### 4. Run the Bot
 

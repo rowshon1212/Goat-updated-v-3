@@ -35,6 +35,24 @@ function getConfigPath(baseName, ext = ".json") {
 	throw new Error(`Missing ${baseName}${ext} or ${baseName}.dev${ext}`);
 }
 
+function getAccountPath() {
+const candidates = [
+"account.dev.txt",
+"account.txt",
+"appstate.dev.txt",
+"appstate.txt",
+"appstate.dev.json",
+"appstate.json"
+];
+const accountPath = candidates
+.map(fileName => path.join(__dirname, fileName))
+.find(filePath => fs.existsSync(filePath));
+if (!accountPath) {
+throw new Error("Missing account.txt/appstate.txt (or their .dev/.json variants)");
+}
+return accountPath;
+}
+
 function validJSON(pathDir) {
 	if (!fs.existsSync(pathDir)) throw new Error(`File "${pathDir}" not found`);
 	execSync(`npx jsonlint "${pathDir}"`, { stdio: 'pipe' });
@@ -44,7 +62,7 @@ function validJSON(pathDir) {
 // ——————————— CONFIG FILES ——————————— //
 const dirConfig = getConfigPath("config", ".json");
 const dirConfigCommands = getConfigPath("configCommands", ".json");
-const dirAccount = getConfigPath("account", ".txt");
+const dirAccount = getAccountPath();
 
 [dirConfig, dirConfigCommands].forEach(pathDir => validJSON(pathDir));
 
@@ -173,6 +191,33 @@ async function safeGetUserName(userID, api) {
 	}
 }
 
+function numericE2EEId(value) {
+const match = String(value || "").match(/^\d+/);
+return match ? match[0] : String(value || "");
+}
+
+function normalizeE2EEEvent(event) {
+if (!event || !event.isE2EE) return event;
+
+// Some one-to-one E2EE payloads omit senderId even though senderJid is
+// present. GoatBot needs a numeric senderID for permissions and user data.
+if (!event.senderID) {
+const e2ee = event.e2ee || {};
+const senderJid = e2ee.senderJid || event.senderJid || event.senderId;
+const chatJid = event.threadID || e2ee.chatJid;
+const isKnownGroup = /@(?:g\.us|group\.facebook\.com)$/i.test(String(chatJid || ""));
+const fallback = senderJid || (!isKnownGroup ? chatJid : "");
+if (fallback) event.senderID = numericE2EEId(fallback);
+}
+
+if (event.messageReply && !event.messageReply.senderID) {
+const replySender = event.messageReply.senderJid || event.messageReply.senderId;
+if (replySender) event.messageReply.senderID = numericE2EEId(replySender);
+}
+
+return event;
+}
+
 async function startBot() {
 	console.log(colors.hex("#f5ab00")("──────────────────────────────────────────────────"));
 	if (global.GoatBot.Listening) await stopListening();
@@ -216,7 +261,7 @@ async function startBot() {
 			const handlerAction = require("./includes/listen.js")(
 				api, threadModel, userModel, dashBoardModel, globalModel, usersData, threadsData, dashBoardData, globalData
 			);
-			handlerAction(event);
+handlerAction(normalizeE2EEEvent(event));
 		}
 
 		global.GoatBot.Listening = api.listenMqtt(callBackListen);
