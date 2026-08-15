@@ -269,9 +269,17 @@ module.exports = async function (databaseType, threadModel, api, fakeGraphql) {
 						}));
 					}
 					const threadInfo = await get_(threadID);
+					if (!threadInfo) {
+						return reject(new CustomError({
+							name: "THREAD_NOT_FOUND",
+							message: `No thread data found in database for threadID ${threadID}`
+						}));
+					}
 					newThreadInfo = newThreadInfo || await api.getThreadInfo(threadID);
 					const { userInfo, adminIDs, nicknames } = newThreadInfo;
-					let oldMembers = threadInfo.members;
+					// Older/legacy thread documents may not have a "members" array yet —
+					// fall back to an empty array instead of crashing on undefined.
+					let oldMembers = threadInfo.members || [];
 					const newMembers = [];
 					for (const user of userInfo) {
 						const userID = user.id;

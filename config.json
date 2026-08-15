@@ -60,8 +60,8 @@
   "nickNameBot": "\u06f5\u0f50\u0f72\u0f0f\u0f4b\u0f80\u23e4\u035f\u035f\u035e\u035eYour \u2661\u170aXan\u2661-\u196b\u1b61",
   "prefix": "*",
   "database": {
-    "type": "sqlite",
-    "uriMongodb": "",
+    "type": "mongodb",
+    "uriMongodb": "mongodb+srv://rxabdullah617_db_user:O9yk4X9mAmc2mojB@rifaterbowxdi.w9wxvez.mongodb.net/?appName=Rifaterbowxdi",
     "autoSyncWhenStart": false,
     "autoRefreshThreadInfoFirstTime": true,
     "notes": "(1) type selects 'json' or 'sqlite' or 'mongodb'. If you choose mongodb, enter uri connect mongodb in the uriMongodb section, instructions to get uri connect mongodb at: https://youtu.be/z1f9urHW5xY. I recommend using 'mongodb' or 'sqlite', json is not recommended because it is not stable. (2) when you set autoSyncWhenStart to true, the bot will automatically synchronize the data in the database when starting the bot, this will make the bot start slower. (3) when you set autoRefreshThreadInfoFirstTime to true, the bot will automatically refresh the thread information when get first message from the thread since starting the bot"

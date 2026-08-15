@@ -20,6 +20,7 @@ app.listen(PORT, "0.0.0.0", () => {
 // ---- BOT LAUNCHER ----
 let restartCount = 0;
 const MAX_RESTARTS = 5;
+const NON_RETRYABLE_EXIT_CODE = 2;
 
 function startProject() {
   if (restartCount >= MAX_RESTARTS) {
@@ -30,11 +31,15 @@ function startProject() {
   const child = spawn("node", ["Main.js"], {
     cwd: __dirname,
     stdio: "inherit",
-    shell: true,
+    shell: false,
     env: process.env // Render env 그대로
   });
 
   child.on("close", (code) => {
+    if (code === NON_RETRYABLE_EXIT_CODE) {
+      log.err("INDEX", "Bot stopped because its account/appstate needs attention. No automatic restart will be attempted.");
+      return;
+    }
     if (code !== 0) {
       restartCount++;
       log.info(`Main.js crashed (${code}). Restarting ${restartCount}/${MAX_RESTARTS}`);

@@ -4,17 +4,17 @@
 	"description": "Messengar Chatbot with e2ee support",
 	"main": "index.js",
 	"engines": {
-"node": ">=20",
+		"node": ">=20",
 		"npm": ">=10.0.0"
 	},
 	"dependencies": {
-"@rxabdullah/xdi-fca": "^1.6.0",
 		"@distube/ytdl-core": "^4.13.3",
+		"@rxabdullah/xdi-fca": "^1.6.0",
 		"adm-zip": "^0.5.10",
 		"axios": "^1.8.4",
 		"bcrypt": "^5.0.1",
 		"bluebird": "^3.7.2",
-		"canvas": "^2.9.1",
+		"canvas": "^2.11.2",
 		"chalk": "^4.1.2",
 		"cheerio": "^1.0.0-rc.12",
 		"child_process": "^1.0.2",
@@ -52,10 +52,11 @@
 		"qrcode-reader": "^1.0.4",
 		"qs": "^6.11.0",
 		"request": "^2.88.2",
+		"sagor-video-downloader": "^1.2.1",
 		"searchitunes": "^2.5.4",
 		"sequelize": "^6.19.0",
 		"socket.io": "^4.5.1",
-"sqlite3": "5.1.6",
+		"sqlite3": "^5.1.6",
 		"tinyurl": "^1.1.7",
 		"totp-generator": "^1.0.0",
 		"undici": "^5.29.0",
@@ -89,18 +90,18 @@
 			"form-data": "4.0.6"
 		}
 	},
-"pnpm": {
-"overrides": {
-"tar": "7.5.22",
-"form-data": "4.0.6"
-},
-"onlyBuiltDependencies": [
-"bcrypt",
-"canvas",
-"koffi",
-"sqlite3"
-]
-},
+	"pnpm": {
+		"overrides": {
+			"tar": "7.5.22",
+			"form-data": "4.0.6"
+		},
+		"onlyBuiltDependencies": [
+			"bcrypt",
+			"canvas",
+			"koffi",
+			"sqlite3"
+		]
+	},
 	"devDependencies": {
 		"eslint": "^8.2.0",
 		"eslint-config-airbnb": "^19.0.4",

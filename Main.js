@@ -15,7 +15,6 @@ const path = defaultRequire("path");
 const readline = defaultRequire("readline");
 const login = require("./includes/Fca");
 const https = defaultRequire("https");
-const { execSync } = require('child_process');
 const log = require('./utils/logger/log.js');
 
 process.stdout.write("\x1b]2;GOAT BOT V3 - MADE BY RX\x1b\x5c");
@@ -55,8 +54,13 @@ return accountPath;
 
 function validJSON(pathDir) {
 	if (!fs.existsSync(pathDir)) throw new Error(`File "${pathDir}" not found`);
-	execSync(`npx jsonlint "${pathDir}"`, { stdio: 'pipe' });
-	return true;
+	try {
+		JSON.parse(readFileSync(pathDir, "utf8"));
+		return true;
+	} catch (error) {
+		const details = error && error.message ? `: ${error.message}` : "";
+		throw new Error(`Invalid JSON in "${pathDir}"${details}`);
+	}
 }
 
 // ——————————— CONFIG FILES ——————————— //
@@ -221,15 +225,31 @@ return event;
 async function startBot() {
 	console.log(colors.hex("#f5ab00")("──────────────────────────────────────────────────"));
 	if (global.GoatBot.Listening) await stopListening();
-	if (!existsSync(accountFile)) { log.error("LOGIN", "Account file not found!"); process.exit(); }
+	if (!existsSync(accountFile)) {
+		log.error("LOGIN", "Account file not found. Add a valid account/appstate JSON file before starting the bot.");
+		process.exitCode = 2;
+		return;
+	}
 
 	let appState;
-	try { appState = JSON.parse(readFileSync(accountFile, "utf8")); }
-	catch { log.error("LOGIN", "Invalid appstate.json format!"); process.exit(); }
+	try {
+		appState = JSON.parse(readFileSync(accountFile, "utf8"));
+		if (!Array.isArray(appState) || appState.length === 0) {
+			throw new Error("expected a non-empty cookie array");
+		}
+	} catch (error) {
+		log.error("LOGIN", `Invalid account/appstate JSON: ${error.message}`);
+		process.exitCode = 2;
+		return;
+	}
 
 	log.info("LOGIN", "Logging in with FCA...");
 	login({ appState }, config.optionsFca, async (error, api) => {
-		if (error) { log.err("LOGIN", "FCA Login Failed:", error); return process.exit(); }
+		if (error) {
+			log.err("LOGIN", "FCA Login Failed. The account/appstate cookie may be expired or invalid.", error);
+			process.exitCode = 2;
+			return;
+		}
 
 		global.GoatBot.fcaApi = api;
 		global.botID = api.getCurrentUserID();

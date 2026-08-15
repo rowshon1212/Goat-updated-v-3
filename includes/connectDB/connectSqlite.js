@@ -3,7 +3,8 @@ module.exports = async function () {
 	const path = __dirname + "/../data/data.sqlite";
 	const sequelize = new Sequelize({
 		dialect: "sqlite",
-		host: path,
+		dialectModule: require("better-sqlite3"),
+		storage: path,
 		logging: false
 	});
 

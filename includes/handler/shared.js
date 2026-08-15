@@ -189,7 +189,17 @@ async function buildContext({ api, threadModel, userModel, dashBoardModel, globa
     if (threadData && typeof threadData.isGroup === "boolean") resolvedIsGroup = threadData.isGroup;
     if (resolvedIsGroup !== isGroup) event.isGroup = resolvedIsGroup;
 
-    if (typeof threadData.settings.hideNotiMessage == "object") hideNotiMessage = threadData.settings.hideNotiMessage;
+    // Legacy/incomplete thread documents (created by an older schema, or a
+    // partially-migrated DB) can be missing sub-objects that newer code assumes
+    // exist. Normalize them once here instead of guarding every call site.
+    if (threadData) {
+        if (!threadData.settings) threadData.settings = {};
+        if (!threadData.data) threadData.data = {};
+        if (!threadData.banned) threadData.banned = {};
+        if (!threadData.adminIDs) threadData.adminIDs = [];
+    }
+
+    if (threadData.settings && typeof threadData.settings.hideNotiMessage == "object") hideNotiMessage = threadData.settings.hideNotiMessage;
 
     const prefix = getPrefix(threadID);
     const role = getRole(threadData, senderID);
@@ -200,7 +210,7 @@ async function buildContext({ api, threadModel, userModel, dashBoardModel, globa
         envEvents, envGlobal, role,
         removeCommandNameFromBody
     };
-    const langCode = threadData.data.lang || config.language || "en";
+    const langCode = (threadData.data && threadData.data.lang) || config.language || "en";
 
     function createMessageSyntaxError(commandName) {
         message.SyntaxError = async function () {
